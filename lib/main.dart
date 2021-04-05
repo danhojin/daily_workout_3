@@ -1,14 +1,16 @@
 import 'dart:math';
 
+import 'package:daily_workout_3/body_records.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
-import 'package:daily_workout_3/models.dart';
+import 'models.dart';
 
 class Boxes {
   static const challenges = 'challenges';
+  static const bodyRecodes = 'bodyRecords';
 }
 
 void main() async {
@@ -16,17 +18,35 @@ void main() async {
   Hive.registerAdapter(DurationAdapter());
   Hive.registerAdapter(ExerciseAdapter());
   Hive.registerAdapter(ChallengeAdapter());
+  Hive.registerAdapter(BodyRecordAdapter());
   var box = await Hive.openBox<Challenge>(Boxes.challenges);
   await box.clear();
   var data = mockChallenges(10);
   print(data.length);
   print(data[0].repetitions);
   box.addAll(data);
+  await Hive.openBox<BodyRecord>(Boxes.bodyRecodes).then(
+    (box) => box.addAll(
+      List.generate(
+        10,
+        (index) => BodyRecord()
+          ..created = DateTime.now().subtract(
+            Duration(days: Random().nextInt(20)),
+          )
+          ..weight = 70.0 + Random().nextDouble() * 10.0,
+      ).toList(),
+    ),
+  );
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (_) => ItemsBoxState<Challenge>(
         name: Boxes.challenges,
+      ),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => ItemsBoxState<BodyRecord>(
+        name: Boxes.bodyRecodes,
       ),
     ),
   ], child: MyApp()));
@@ -73,14 +93,29 @@ class MyApp extends StatelessWidget {
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    List<Challenge> items = context.watch<ItemsBoxState<Challenge>>().items;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Challenges'),
       ),
-      body: Center(
-        child: Text(items.length.toString()),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BodyRecordsPage(),
+                  ),
+                );
+              },
+              child: Text("Body Weight Tracker"),
+            ),
+          ],
+        ),
       ),
     );
   }

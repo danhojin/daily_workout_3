@@ -76,3 +76,11 @@ class Challenge extends HiveObject {
   @HiveField(4)
   List<int> repetitions = [];
 }
+
+@HiveType(typeId: 3)
+class BodyRecord extends HiveObject {
+  @HiveField(0)
+  DateTime created = DateTime(1900);
+  @HiveField(1)
+  double weight = 10.0;
+}
