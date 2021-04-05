@@ -41,6 +41,19 @@ extension ExerciseExtension on Exercise {
   String get name => this.toString().split('.').last.capitalize();
 }
 
+class DurationAdapter extends TypeAdapter<Duration> {
+  @override
+  final typeId = 2;
+
+  @override
+  void write(BinaryWriter writer, Duration value) =>
+      writer.writeInt(value.inMicroseconds);
+
+  @override
+  Duration read(BinaryReader reader) =>
+      Duration(microseconds: reader.readInt());
+}
+
 const exerciseString = <Exercise, String>{
   Exercise.squats: 'Squats',
   Exercise.pushUps: 'Push-ups',

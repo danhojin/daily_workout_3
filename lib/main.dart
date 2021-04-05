@@ -8,27 +8,22 @@ import 'package:provider/provider.dart';
 import 'package:daily_workout_3/models.dart';
 
 class Boxes {
-  static const exercises = 'exercises';
   static const challenges = 'challenges';
 }
 
 void main() async {
   await Hive.initFlutter();
+  Hive.registerAdapter(DurationAdapter());
   Hive.registerAdapter(ExerciseAdapter());
   Hive.registerAdapter(ChallengeAdapter());
-  await Hive.openBox<Exercise>(Boxes.exercises);
   var box = await Hive.openBox<Challenge>(Boxes.challenges);
+  await box.clear();
   var data = mockChallenges(10);
   print(data.length);
   print(data[0].repetitions);
-  box.add(data[0]);
+  box.addAll(data);
 
   runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(
-      create: (_) => ItemsBoxState<Exercise>(
-        name: Boxes.exercises,
-      ),
-    ),
     ChangeNotifierProvider(
       create: (_) => ItemsBoxState<Challenge>(
         name: Boxes.challenges,
