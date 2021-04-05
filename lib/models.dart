@@ -42,6 +42,7 @@ extension ExerciseExtension on Exercise {
 }
 
 class DurationAdapter extends TypeAdapter<Duration> {
+  // https://github.com/hivedb/hive/issues/212
   @override
   final typeId = 2;
 
