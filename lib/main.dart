@@ -106,7 +106,42 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(_navQueue.length);
+    List<Widget> _bodies = [
+      Container(),
+      WeightChart(),
+      Container(
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BodyRecordsPage(),
+                  ),
+                );
+              },
+              child: Text("Body Weight Tracker"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChallengesPage(),
+                  ),
+                );
+              },
+              child: Text("Challenges"),
+            ),
+          ],
+        ),
+      ),
+    ];
+
     return WillPopScope(
       onWillPop: () async {
         // Goodbyd message
@@ -127,37 +162,13 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: Text('Challenges'),
         ),
-        body: Container(
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BodyRecordsPage(),
-                    ),
-                  );
-                },
-                child: Text("Body Weight Tracker"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChallengesPage(),
-                    ),
-                  );
-                },
-                child: Text("Challenges"),
-              ),
-            ],
-          ),
-        ),
+        body: _bodies[_selectedNav],
+        floatingActionButton: _selectedNav == 1
+            ? FloatingActionButton(
+                onPressed: () {},
+                child: Icon(Icons.add),
+              )
+            : null,
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedNav,
           onTap: (index) {
