@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:daily_workout_3/body_records.dart';
 import 'package:daily_workout_3/challenges.dart';
@@ -166,18 +168,45 @@ class _HomePageState extends State<HomePage> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
+              icon: const Icon(Ionicons.barbell_outline),
               label: 'Challenge',
             ),
             BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
+              icon: const FaIcon(FontAwesomeIcons.balanceScaleRight),
               label: 'Metrics',
             ),
             BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: 'Log',
+              icon: const FaIcon(FontAwesomeIcons.chartLine),
+              label: 'Stats',
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class FormPage extends StatelessWidget {
+  final Widget title;
+  final Widget body;
+
+  const FormPage({
+    Key? key,
+    required this.title,
+    required this.body,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: title,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(20.0),
+          child: body,
         ),
       ),
     );
