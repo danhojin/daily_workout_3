@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -92,40 +93,89 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  ListQueue<int> _navQueue = ListQueue.from([0, 0]);
+  int _selectedNav = 0;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Challenges'),
-      ),
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BodyRecordsPage(),
-                  ),
-                );
-              },
-              child: Text("Body Weight Tracker"),
+    print(_navQueue.length);
+    return WillPopScope(
+      onWillPop: () async {
+        // Goodbyd message
+        if (_navQueue.isEmpty) {
+          return true;
+        } else {
+          _navQueue.removeLast();
+          if (_navQueue.isNotEmpty) {
+            setState(() {
+              _selectedNav = _navQueue.last;
+            });
+            return false;
+          }
+          return true;
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Challenges'),
+        ),
+        body: Container(
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BodyRecordsPage(),
+                    ),
+                  );
+                },
+                child: Text("Body Weight Tracker"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChallengesPage(),
+                    ),
+                  );
+                },
+                child: Text("Challenges"),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedNav,
+          onTap: (index) {
+            setState(() {
+              _navQueue.addLast(index);
+              _selectedNav = index;
+            });
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'Challenge',
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChallengesPage(),
-                  ),
-                );
-              },
-              child: Text("Challenges"),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'Metrics',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'Log',
             ),
           ],
         ),
