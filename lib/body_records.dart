@@ -1,5 +1,6 @@
-import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 
 import 'models.dart';
@@ -17,26 +18,29 @@ class BodyRecordsPage extends StatelessWidget {
       body: Column(
         children: [
           WeightChart(),
-          // ListView.builder(
-          //   itemCount: items.length,
-          //   itemBuilder: (context, index) {
-          //     return ListTile(
-          //       title: Text(items[index].weight.toStringAsFixed(1)),
-          //       subtitle: Text(items[index].created.toString()),
-          //     );
-          //   },
-          // ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: Icon(Icons.add),
       ),
     );
   }
 }
 
-class WeightChart extends StatelessWidget {
+class WeightChart extends StatefulWidget {
   static const List<Color> gradientColors = [
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
   ];
+
+  @override
+  _WeightChartState createState() => _WeightChartState();
+}
+
+class _WeightChartState extends State<WeightChart> {
+  double minX = 5.0;
+  double maxX = 11.0;
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +48,22 @@ class WeightChart extends StatelessWidget {
       padding: const EdgeInsets.all(20.0),
       child: AspectRatio(
         aspectRatio: 1.7,
-        child: LineChart(
-          _weightData(),
+        child: GestureDetector(
+          onHorizontalDragUpdate: (DragUpdateDetails detail) {
+            setState(() {
+              var dx = -detail.delta.dx;
+              if (dx > 0) {
+                dx = min(11, maxX + 0.05 * dx) - maxX;
+              } else {
+                dx = max(0, minX + 0.05 * dx) - minX;
+              }
+              maxX = maxX + dx;
+              minX = minX + dx;
+            });
+          },
+          child: LineChart(
+            _weightData(),
+          ),
         ),
       ),
     );
@@ -53,6 +71,7 @@ class WeightChart extends StatelessWidget {
 
   LineChartData _weightData() {
     return LineChartData(
+      clipData: FlClipData.all(),
       titlesData: FlTitlesData(
         bottomTitles: SideTitles(
           showTitles: true,
@@ -83,12 +102,13 @@ class WeightChart extends StatelessWidget {
           },
         ),
       ),
-      minX: 0,
-      maxX: 11,
+      minX: minX,
+      maxX: maxX,
       minY: 0,
       maxY: 6,
       lineBarsData: [
         LineChartBarData(
+          show: true,
           spots: [
             FlSpot(0, 3),
             FlSpot(2.6, 2),
@@ -102,7 +122,7 @@ class WeightChart extends StatelessWidget {
           barWidth: 5,
           belowBarData: BarAreaData(
             show: true,
-            colors: gradientColors
+            colors: WeightChart.gradientColors
                 .map(
                   (color) => color.withOpacity(0.3),
                 )

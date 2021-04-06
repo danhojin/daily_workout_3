@@ -1,12 +1,13 @@
 import 'dart:math';
 
-import 'package:daily_workout_3/body_records.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
-import 'models.dart';
+import 'package:daily_workout_3/body_records.dart';
+import 'package:daily_workout_3/challenges.dart';
+import 'package:daily_workout_3/models.dart';
 
 class Boxes {
   static const challenges = 'challenges';
@@ -22,20 +23,21 @@ void main() async {
   var box = await Hive.openBox<Challenge>(Boxes.challenges);
   await box.clear();
   var data = mockChallenges(10);
-  print(data.length);
-  print(data[0].repetitions);
   box.addAll(data);
   await Hive.openBox<BodyRecord>(Boxes.bodyRecodes).then(
-    (box) => box.addAll(
-      List.generate(
-        10,
-        (index) => BodyRecord()
-          ..created = DateTime.now().subtract(
-            Duration(days: Random().nextInt(20)),
-          )
-          ..weight = 70.0 + Random().nextDouble() * 10.0,
-      ).toList(),
-    ),
+    (box) async {
+      await box.clear();
+      box.addAll(
+        List.generate(
+          10,
+          (index) => BodyRecord()
+            ..created = DateTime.now().subtract(
+              Duration(days: Random().nextInt(20)),
+            )
+            ..weight = 70.0 + Random().nextDouble() * 10.0,
+        ).toList(),
+      );
+    },
   );
 
   runApp(MultiProvider(providers: [
@@ -113,6 +115,17 @@ class HomePage extends StatelessWidget {
                 );
               },
               child: Text("Body Weight Tracker"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChallengesPage(),
+                  ),
+                );
+              },
+              child: Text("Challenges"),
             ),
           ],
         ),
