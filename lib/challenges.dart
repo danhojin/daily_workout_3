@@ -333,6 +333,26 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                   )
                   .toList(),
             ),
+            SizedBox(
+              height: 20,
+            ),
+            ReactiveDropdownField<Duration>(
+              formControlName: 'rest',
+              decoration: InputDecoration(labelText: 'Rest (min)'),
+              items: List.generate(
+                10,
+                (index) => Duration(minutes: index + 1),
+              )
+                  .map<DropdownMenuItem<Duration>>(
+                    (el) => DropdownMenuItem(
+                      value: el,
+                      child: Text(
+                        el.inMinutes.toString(),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
           ],
         ),
       ),
