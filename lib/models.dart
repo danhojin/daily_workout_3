@@ -18,7 +18,7 @@ class ItemsBoxState<T> with ChangeNotifier {
 }
 
 @HiveType(typeId: 1)
-enum Exercise {
+enum Exercises {
   @HiveField(0)
   squats,
   @HiveField(1)
@@ -37,7 +37,7 @@ extension StringExtension on String {
   }
 }
 
-extension ExerciseExtension on Exercise {
+extension ExercisesExtension on Exercises {
   String get name => this.toString().split('.').last.capitalize();
 }
 
@@ -55,12 +55,12 @@ class DurationAdapter extends TypeAdapter<Duration> {
       Duration(microseconds: reader.readInt());
 }
 
-const exerciseString = <Exercise, String>{
-  Exercise.squats: 'Squats',
-  Exercise.pushUps: 'Push-ups',
-  Exercise.pullUps: 'Pull-ups',
-  Exercise.burpees: 'Burpees',
-  Exercise.sitUps: 'Sit-ups',
+const exerciseString = <Exercises, String>{
+  Exercises.squats: 'Squats',
+  Exercises.pushUps: 'Push-ups',
+  Exercises.pullUps: 'Pull-ups',
+  Exercises.burpees: 'Burpees',
+  Exercises.sitUps: 'Sit-ups',
 };
 
 @HiveType(typeId: 0)
@@ -68,7 +68,7 @@ class Challenge extends HiveObject {
   @HiveField(0)
   DateTime created = DateTime(1900);
   @HiveField(1)
-  Exercise exercise = Exercise.pushUps;
+  Exercises exercise = Exercises.pushUps;
   @HiveField(2)
   Duration rest = Duration(seconds: 60);
   @HiveField(3)

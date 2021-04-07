@@ -6,44 +6,44 @@ part of 'models.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ExerciseAdapter extends TypeAdapter<Exercise> {
+class ExercisesAdapter extends TypeAdapter<Exercises> {
   @override
   final int typeId = 1;
 
   @override
-  Exercise read(BinaryReader reader) {
+  Exercises read(BinaryReader reader) {
     switch (reader.readByte()) {
       case 0:
-        return Exercise.squats;
+        return Exercises.squats;
       case 1:
-        return Exercise.pushUps;
+        return Exercises.pushUps;
       case 2:
-        return Exercise.pullUps;
+        return Exercises.pullUps;
       case 3:
-        return Exercise.burpees;
+        return Exercises.burpees;
       case 4:
-        return Exercise.sitUps;
+        return Exercises.sitUps;
       default:
-        return Exercise.squats;
+        return Exercises.squats;
     }
   }
 
   @override
-  void write(BinaryWriter writer, Exercise obj) {
+  void write(BinaryWriter writer, Exercises obj) {
     switch (obj) {
-      case Exercise.squats:
+      case Exercises.squats:
         writer.writeByte(0);
         break;
-      case Exercise.pushUps:
+      case Exercises.pushUps:
         writer.writeByte(1);
         break;
-      case Exercise.pullUps:
+      case Exercises.pullUps:
         writer.writeByte(2);
         break;
-      case Exercise.burpees:
+      case Exercises.burpees:
         writer.writeByte(3);
         break;
-      case Exercise.sitUps:
+      case Exercises.sitUps:
         writer.writeByte(4);
         break;
     }
@@ -55,7 +55,7 @@ class ExerciseAdapter extends TypeAdapter<Exercise> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ExerciseAdapter &&
+      other is ExercisesAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -72,7 +72,7 @@ class ChallengeAdapter extends TypeAdapter<Challenge> {
     };
     return Challenge()
       ..created = fields[0] as DateTime
-      ..exercise = fields[1] as Exercise
+      ..exercise = fields[1] as Exercises
       ..rest = fields[2] as Duration
       ..durations = (fields[3] as List).cast<Duration>()
       ..repetitions = (fields[4] as List).cast<int>();

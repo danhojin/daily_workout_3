@@ -20,7 +20,7 @@ class Boxes {
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(DurationAdapter());
-  Hive.registerAdapter(ExerciseAdapter());
+  Hive.registerAdapter(ExercisesAdapter());
   Hive.registerAdapter(ChallengeAdapter());
   Hive.registerAdapter(BodyRecordAdapter());
   var box = await Hive.openBox<Challenge>(Boxes.challenges);
@@ -66,7 +66,7 @@ List<Challenge> mockChallenges(int length) {
       ..created = DateTime.now().subtract(
         Duration(days: rng.nextInt(21)),
       )
-      ..exercise = Exercise.values[rng.nextInt(Exercise.values.length)]
+      ..exercise = Exercises.values[rng.nextInt(Exercises.values.length)]
       ..rest = Duration(seconds: 60)
       ..durations = List.generate(
         3,
@@ -103,12 +103,17 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ListQueue<int> _navQueue = ListQueue.from([0, 0]);
   int _selectedNav = 0;
+  final List<Widget> appBarTitles = [
+    const Text('Challenges'),
+    const Text('Metrics'),
+    const Text('Statsistics'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     List<Widget> _bodies = [
-      Container(),
-      WeightChart(),
+      Challenges(),
+      BodyRecords(),
       Container(
         width: MediaQuery.of(context).size.width,
         child: Column(
@@ -160,7 +165,13 @@ class _HomePageState extends State<HomePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Challenges'),
+          title: appBarTitles[_selectedNav],
+          actions: [
+            IconButton(
+              icon: Icon(Icons.person),
+              onPressed: () {},
+            ),
+          ],
         ),
         body: _bodies[_selectedNav],
         floatingActionButton: _selectedNav == 1

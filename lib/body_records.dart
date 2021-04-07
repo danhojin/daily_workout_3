@@ -28,6 +28,28 @@ class BodyRecordsPage extends StatelessWidget {
   }
 }
 
+class BodyRecords extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        WeightChart(),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Container(
+            height: 200.0,
+            width: MediaQuery.of(context).size.width,
+            color: Colors.grey,
+            child: Center(
+              child: Text('BMI'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class WeightChart extends StatefulWidget {
   static const List<Color> gradientColors = [
     const Color(0xff23b6e6),
