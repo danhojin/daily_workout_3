@@ -2,8 +2,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 import 'package:daily_workout_3/models.dart';
+import 'package:daily_workout_3/main.dart';
 
 class ChallengesPage extends StatelessWidget {
   @override
@@ -54,7 +56,9 @@ class Challenges extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NewExercisePage(),
+                builder: (context) => ChallengeFormPage(
+                  title: 'New Challenge',
+                ),
               ),
             );
           },
@@ -273,6 +277,65 @@ class _ExerciseDescription extends StatelessWidget {
       ),
       title: Text(title),
       subtitle: Text(subtitle),
+    );
+  }
+}
+
+class ChallengeFormPage extends StatefulWidget {
+  final String title;
+  final Challenge? challenge;
+
+  const ChallengeFormPage({
+    Key? key,
+    required this.title,
+    this.challenge,
+  }) : super(key: key);
+
+  @override
+  _ChallengeFormPageState createState() => _ChallengeFormPageState();
+}
+
+class _ChallengeFormPageState extends State<ChallengeFormPage> {
+  late final form;
+
+  @override
+  void initState() {
+    super.initState();
+    form = FormGroup({
+      'exercise': FormControl<Exercises>(
+        validators: [
+          Validators.required,
+        ],
+      ),
+      'rest': FormControl<Duration>(),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FormPage(
+      title: Text(widget.title),
+      body: ReactiveForm(
+        formGroup: form,
+        child: Column(
+          children: [
+            ReactiveDropdownField<Exercises>(
+              formControlName: 'exercise',
+              decoration: InputDecoration(
+                labelText: 'Exercise',
+              ),
+              items: Exercises.values
+                  .map<DropdownMenuItem<Exercises>>(
+                    (el) => DropdownMenuItem(
+                      value: el,
+                      child: Text(el.name),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

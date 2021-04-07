@@ -36,6 +36,7 @@ dependencies:
   intl: ^0.17.0
   ionicons: ^0.1.2
   font_awesome_flutter: ^9.0.0
+  reactive_forms: ^10.0.3
 
 dev_dependencies:
   flutter_test:

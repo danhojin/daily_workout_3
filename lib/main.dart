@@ -82,14 +82,21 @@ List<Challenge> mockChallenges(int length) {
 }
 
 class MyApp extends StatelessWidget {
+  final theme = ThemeData(
+    primarySwatch: Colors.teal,
+  ).copyWith(
+    inputDecorationTheme: const InputDecorationTheme(
+      border: OutlineInputBorder(),
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      alignLabelWithHint: true,
+    ),
+  );
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: theme,
       home: HomePage(),
     );
   }
@@ -136,7 +143,8 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChallengesPage(),
+                    builder: (context) =>
+                        ChallengeFormPage(title: 'New Challenge'),
                   ),
                 );
               },
