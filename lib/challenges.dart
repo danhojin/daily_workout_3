@@ -1,11 +1,13 @@
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+import 'package:numberpicker/numberpicker.dart';
 
 import 'package:daily_workout_3/models.dart';
-import 'package:daily_workout_3/main.dart';
 
 class ChallengesPage extends StatelessWidget {
   @override
@@ -297,6 +299,9 @@ class ChallengeFormPage extends StatefulWidget {
 
 class _ChallengeFormPageState extends State<ChallengeFormPage> {
   late final form;
+  int _set1Value = 20;
+  int _set2Value = 15;
+  int _set3Value = 15;
 
   @override
   void initState() {
@@ -307,53 +312,157 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
           Validators.required,
         ],
       ),
-      'rest': FormControl<Duration>(),
+      'rest': FormControl<Duration>(
+        validators: [
+          Validators.required,
+        ],
+      ),
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FormPage(
-      title: Text(widget.title),
-      body: ReactiveForm(
-        formGroup: form,
-        child: Column(
-          children: [
-            ReactiveDropdownField<Exercises>(
-              formControlName: 'exercise',
-              decoration: InputDecoration(
-                labelText: 'Exercise',
-              ),
-              items: Exercises.values
-                  .map<DropdownMenuItem<Exercises>>(
-                    (el) => DropdownMenuItem(
-                      value: el,
-                      child: Text(el.name),
-                    ),
-                  )
-                  .toList(),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            ReactiveDropdownField<Duration>(
-              formControlName: 'rest',
-              decoration: InputDecoration(labelText: 'Rest (min)'),
-              items: List.generate(
-                10,
-                (index) => Duration(minutes: index + 1),
-              )
-                  .map<DropdownMenuItem<Duration>>(
-                    (el) => DropdownMenuItem(
-                      value: el,
-                      child: Text(
-                        el.inMinutes.toString(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ReactiveForm(
+          formGroup: form,
+          child: Column(
+            children: [
+              ReactiveDropdownField<Exercises>(
+                formControlName: 'exercise',
+                decoration: InputDecoration(
+                  labelText: 'Exercise',
+                ),
+                items: Exercises.values
+                    .map<DropdownMenuItem<Exercises>>(
+                      (el) => DropdownMenuItem(
+                        value: el,
+                        child: Text(el.name),
                       ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
+                    )
+                    .toList(),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              ReactiveDropdownField<Duration>(
+                formControlName: 'rest',
+                decoration: InputDecoration(labelText: 'Rest (min)'),
+                items: List.generate(
+                  5,
+                  (index) => Duration(minutes: index + 1),
+                )
+                    .map<DropdownMenuItem<Duration>>(
+                      (el) => DropdownMenuItem(
+                        value: el,
+                        child: Text(
+                          el.inMinutes.toString(),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    var width =
+                        min(constraints.maxHeight, constraints.maxWidth);
+                    return SizedBox(
+                      width: width - 60.0,
+                      child: ReactiveFormConsumer(
+                        builder: (context, form, child) {
+                          return ElevatedButton(
+                            onPressed: form.valid ? () {} : null,
+                            style: ElevatedButton.styleFrom(
+                              shape: CircleBorder(),
+                            ),
+                            child: Text(
+                              form.valid ? 'Go' : 'Waiting',
+                              style: TextStyle(
+                                fontSize: 35.0,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        'Set 1',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      NumberPicker(
+                        value: _set1Value,
+                        minValue: 0,
+                        maxValue: 100,
+                        onChanged: (value) {
+                          setState(() {
+                            _set1Value = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        'Set 2',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      NumberPicker(
+                        value: _set2Value,
+                        minValue: 0,
+                        maxValue: 100,
+                        onChanged: (value) {
+                          setState(() {
+                            _set2Value = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        'Set 3',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      NumberPicker(
+                        value: _set3Value,
+                        minValue: 0,
+                        maxValue: 100,
+                        onChanged: (value) {
+                          setState(() {
+                            _set3Value = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
