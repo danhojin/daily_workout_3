@@ -304,11 +304,10 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
   late final form;
   late final Stopwatch _stopwatch;
   late final CountdownTimer _countdownTimer;
-  String _minsec = '0:00:00';
+  String _minsec = '00:00';
 
-  int _set1Value = 20;
-  int _set2Value = 15;
-  int _set3Value = 15;
+  List<int> _repititions = [20, 15, 12];
+  List<Duration> _durations = List.generate(3, (index) => Duration());
   int _activeStep = 0;
 
   @override
@@ -333,11 +332,23 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
       stopwatch: _stopwatch,
     );
     _stopwatch.stop();
+    _stopwatch.reset();
     _countdownTimer.listen((timer) {
       setState(() {
-        _minsec = timer.elapsed.toString().split('.').first;
+        _minsec = _formatMinsec(timer.elapsed);
       });
     });
+  }
+
+  String _formatMinsec(Duration d) {
+    var minsec = d.toString().split('.').first.split(':');
+    return minsec.sublist(1).join(':');
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer.cancel();
+    super.dispose();
   }
 
   @override
@@ -356,6 +367,9 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                 formControlName: 'exercise',
                 decoration: InputDecoration(
                   labelText: 'Exercise',
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
                 items: Exercises.values
                     .map<DropdownMenuItem<Exercises>>(
@@ -371,7 +385,12 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
               ),
               ReactiveDropdownField<Duration>(
                 formControlName: 'rest',
-                decoration: InputDecoration(labelText: 'Rest (min)'),
+                decoration: InputDecoration(
+                  labelText: 'Rest (min)',
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
                 items: List.generate(
                   5,
                   (index) => Duration(minutes: index + 1),
@@ -399,7 +418,14 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                             onPressed: form.valid
                                 ? () {
                                     if (_stopwatch.isRunning) {
-                                      _stopwatch.stop();
+                                      setState(() {
+                                        _stopwatch.stop();
+                                        print(_countdownTimer.elapsed);
+                                        _durations[_activeStep] =
+                                            _countdownTimer.elapsed;
+                                        _activeStep = min(_activeStep + 1, 2);
+                                        _stopwatch.reset();
+                                      });
                                     } else {
                                       _stopwatch.start();
                                     }
@@ -411,10 +437,17 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  form.valid ? Icons.play_arrow : Icons.pause,
-                                  size: 80,
-                                ),
+                                form.valid
+                                    ? Icon(
+                                        _countdownTimer.isRunning
+                                            ? Icons.stop
+                                            : Icons.play_arrow,
+                                        size: 90,
+                                      )
+                                    : Icon(
+                                        Icons.play_arrow,
+                                        size: 90,
+                                      ),
                                 form.valid
                                     ? Text(
                                         _minsec,
@@ -453,71 +486,36 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
+                children: List.generate(
+                  3,
+                  (index) => Column(
                     children: [
                       Text(
-                        'Set 1',
+                        'Set ${index + 1}:',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      NumberPicker(
-                        value: _set1Value,
-                        minValue: 0,
-                        maxValue: 100,
-                        onChanged: (value) {
-                          setState(() {
-                            _set1Value = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
                       Text(
-                        'Set 2',
+                        'Lap: ' + _formatMinsec(_durations[index]),
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
                       ),
                       NumberPicker(
-                        value: _set2Value,
+                        value: _repititions[index],
                         minValue: 0,
                         maxValue: 100,
                         onChanged: (value) {
                           setState(() {
-                            _set2Value = value;
+                            _repititions[index] = value;
                           });
                         },
                       ),
                     ],
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        'Set 3',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      NumberPicker(
-                        value: _set3Value,
-                        minValue: 0,
-                        maxValue: 100,
-                        onChanged: (value) {
-                          setState(() {
-                            _set3Value = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ],
           ),
