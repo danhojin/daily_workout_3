@@ -302,13 +302,16 @@ class ChallengeFormPage extends StatefulWidget {
 
 class _ChallengeFormPageState extends State<ChallengeFormPage> {
   late final form;
-  late final Stopwatch _stopwatch;
-  late final CountdownTimer _countdownTimer;
-  String _minsec = '00:00';
+  final Stopwatch _stopwatch = Stopwatch()..stop();
+  late final List<CountdownTimer> _timers = [];
+
+  List<String> _timeLabel = ['00:00', '00:00'];
 
   List<int> _repititions = [20, 15, 12];
   List<Duration> _durations = List.generate(3, (index) => Duration());
+
   int _activeStep = 0;
+  int _timerIndex = -1;
 
   @override
   void initState() {
@@ -325,19 +328,19 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
         ],
       ),
     });
-    _stopwatch = Stopwatch();
-    _countdownTimer = CountdownTimer(
-      anHour,
-      aSecond,
-      stopwatch: _stopwatch,
-    );
-    _stopwatch.stop();
-    _stopwatch.reset();
-    _countdownTimer.listen((timer) {
+    _timers.add(_setTimer(anHour, 0));
+  }
+
+  CountdownTimer _setTimer(Duration duration, int labelIndex) {
+    var timer = CountdownTimer(duration, aSecond, stopwatch: _stopwatch);
+    timer.listen((event) {
       setState(() {
-        _minsec = _formatMinsec(timer.elapsed);
+        _timeLabel[labelIndex] = _formatMinsec(
+          labelIndex == 0 ? timer.elapsed : timer.remaining,
+        );
       });
     });
+    return timer;
   }
 
   String _formatMinsec(Duration d) {
@@ -347,7 +350,9 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
 
   @override
   void dispose() {
-    _countdownTimer.cancel();
+    _timers.forEach((el) {
+      el.cancel();
+    });
     super.dispose();
   }
 
@@ -414,20 +419,29 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                       width: width - 40.0,
                       child: ReactiveFormConsumer(
                         builder: (context, form, child) {
+                          if (form.valid && _timers.length == 1) {
+                            print(form.control('rest').value);
+                            _timers.add(
+                              _setTimer(
+                                form.control('rest').value,
+                                1,
+                              ),
+                            );
+                          }
+
                           return ElevatedButton(
                             onPressed: form.valid
                                 ? () {
-                                    if (_stopwatch.isRunning) {
+                                    if (_timerIndex < 0) {
                                       setState(() {
-                                        _stopwatch.stop();
-                                        print(_countdownTimer.elapsed);
-                                        _durations[_activeStep] =
-                                            _countdownTimer.elapsed;
-                                        _activeStep = min(_activeStep + 1, 2);
-                                        _stopwatch.reset();
+                                        _timerIndex = _timerIndex + 1;
                                       });
                                     } else {
-                                      _stopwatch.start();
+                                      setState(() {
+                                        _timerIndex = _timerIndex + 1;
+                                        _stopwatch.reset();
+                                        // _stopwatch.start();
+                                      });
                                     }
                                   }
                                 : null,
@@ -436,25 +450,14 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                form.valid
-                                    ? Icon(
-                                        _countdownTimer.isRunning
-                                            ? Icons.stop
-                                            : Icons.play_arrow,
-                                        size: 90,
-                                      )
-                                    : Icon(
-                                        Icons.play_arrow,
-                                        size: 90,
-                                      ),
-                                form.valid
-                                    ? Text(
-                                        _minsec,
-                                        style: TextStyle(fontSize: 20),
-                                      )
-                                    : Container(),
-                              ],
+                              children: form.valid
+                                  ? [
+                                      Icon(Icons.play_arrow),
+                                      Text(_timeLabel[_timerIndex % 2]),
+                                    ]
+                                  : [
+                                      Icon(Icons.play_arrow),
+                                    ],
                             ),
                           );
                         },
