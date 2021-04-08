@@ -4,8 +4,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:quiver/time.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:im_stepper/stepper.dart';
+import 'package:quiver/async.dart';
 
 import 'package:daily_workout_3/models.dart';
 
@@ -299,9 +302,14 @@ class ChallengeFormPage extends StatefulWidget {
 
 class _ChallengeFormPageState extends State<ChallengeFormPage> {
   late final form;
+  late final Stopwatch _stopwatch;
+  late final CountdownTimer _countdownTimer;
+  String _minsec = '0:00:00';
+
   int _set1Value = 20;
   int _set2Value = 15;
   int _set3Value = 15;
+  int _activeStep = 0;
 
   @override
   void initState() {
@@ -317,6 +325,18 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
           Validators.required,
         ],
       ),
+    });
+    _stopwatch = Stopwatch();
+    _countdownTimer = CountdownTimer(
+      anHour,
+      aSecond,
+      stopwatch: _stopwatch,
+    );
+    _stopwatch.stop();
+    _countdownTimer.listen((timer) {
+      setState(() {
+        _minsec = timer.elapsed.toString().split('.').first;
+      });
     });
   }
 
@@ -372,19 +392,36 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                     var width =
                         min(constraints.maxHeight, constraints.maxWidth);
                     return SizedBox(
-                      width: width - 60.0,
+                      width: width - 40.0,
                       child: ReactiveFormConsumer(
                         builder: (context, form, child) {
                           return ElevatedButton(
-                            onPressed: form.valid ? () {} : null,
+                            onPressed: form.valid
+                                ? () {
+                                    if (_stopwatch.isRunning) {
+                                      _stopwatch.stop();
+                                    } else {
+                                      _stopwatch.start();
+                                    }
+                                  }
+                                : null,
                             style: ElevatedButton.styleFrom(
                               shape: CircleBorder(),
                             ),
-                            child: Text(
-                              form.valid ? 'Go' : 'Waiting',
-                              style: TextStyle(
-                                fontSize: 35.0,
-                              ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  form.valid ? Icons.play_arrow : Icons.pause,
+                                  size: 80,
+                                ),
+                                form.valid
+                                    ? Text(
+                                        _minsec,
+                                        style: TextStyle(fontSize: 20),
+                                      )
+                                    : Container(),
+                              ],
                             ),
                           );
                         },
@@ -392,6 +429,27 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                     );
                   },
                 ),
+              ),
+              DotStepper(
+                dotCount: 3,
+                dotRadius: 8.0,
+                shape: Shape.stadium,
+                spacing: 20,
+                activeStep: _activeStep,
+                indicator: Indicator.shift,
+                indicatorDecoration: IndicatorDecoration(
+                  strokeColor: Theme.of(context).primaryColor,
+                  color: Theme.of(context).primaryColor,
+                ),
+                onDotTapped: (index) {
+                  setState(() {
+                    _activeStep = index;
+                  });
+                },
+                tappingEnabled: false,
+              ),
+              SizedBox(
+                height: 10,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,

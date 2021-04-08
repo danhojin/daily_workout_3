@@ -38,6 +38,8 @@ dependencies:
   font_awesome_flutter: ^9.0.0
   reactive_forms: ^10.0.3
   numberpicker: ^2.0.1
+  quiver: ^3.0.1
+  im_stepper: ^0.1.3
 
 dev_dependencies:
   flutter_test:
