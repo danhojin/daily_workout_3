@@ -329,18 +329,19 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
       ),
     });
     _timers.add(_setTimer(anHour, 0));
+    _stopwatch.stop();
+    _stopwatch.reset();
   }
 
   CountdownTimer _setTimer(Duration duration, int labelIndex) {
-    var timer = CountdownTimer(duration, aSecond, stopwatch: _stopwatch);
-    timer.listen((event) {
-      setState(() {
-        _timeLabel[labelIndex] = _formatMinsec(
-          labelIndex == 0 ? timer.elapsed : timer.remaining,
-        );
+    return CountdownTimer(duration, aSecond, stopwatch: _stopwatch)
+      ..listen((event) {
+        setState(() {
+          _timeLabel[labelIndex] = _formatMinsec(
+            labelIndex == 0 ? event.elapsed : event.remaining,
+          );
+        });
       });
-    });
-    return timer;
   }
 
   String _formatMinsec(Duration d) {
@@ -420,29 +421,24 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                       child: ReactiveFormConsumer(
                         builder: (context, form, child) {
                           if (form.valid && _timers.length == 1) {
-                            print(form.control('rest').value);
                             _timers.add(
                               _setTimer(
                                 form.control('rest').value,
                                 1,
                               ),
                             );
+                            _stopwatch.stop();
+                            _stopwatch.reset();
                           }
 
                           return ElevatedButton(
                             onPressed: form.valid
                                 ? () {
-                                    if (_timerIndex < 0) {
-                                      setState(() {
-                                        _timerIndex = _timerIndex + 1;
-                                      });
-                                    } else {
-                                      setState(() {
-                                        _timerIndex = _timerIndex + 1;
-                                        _stopwatch.reset();
-                                        // _stopwatch.start();
-                                      });
-                                    }
+                                    _timerIndex = _timerIndex + 1;
+                                    _stopwatch
+                                      ..stop()
+                                      ..reset()
+                                      ..start();
                                   }
                                 : null,
                             style: ElevatedButton.styleFrom(
