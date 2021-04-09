@@ -564,7 +564,7 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
               _remaining = event.remaining.inSeconds;
             });
           });
-        _activeStep = _activeStep + 1;
+        _activeStep = (_activeStep + 1) % 3;
         break;
     }
 
