@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +10,7 @@ import 'package:im_stepper/stepper.dart';
 import 'package:quiver/async.dart';
 
 import 'package:daily_workout_3/models.dart';
+import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 
 class ChallengesPage extends StatelessWidget {
   @override
@@ -302,20 +302,24 @@ class ChallengeFormPage extends StatefulWidget {
 
 class _ChallengeFormPageState extends State<ChallengeFormPage> {
   late final form;
-  final Stopwatch _stopwatch = Stopwatch()..stop();
-  late final List<CountdownTimer> _timers = [];
 
-  List<String> _timeLabel = ['00:00', '00:00'];
+  final Stopwatch _stopwatch = Stopwatch();
+  late CountdownTimer _countdownTimer;
+  String _topLabel = 'Set 1';
+  String _timeLabel = '00:00';
+  String _bottomLabel = 'Start';
+  int _remaining = 0;
+  int _timerActionStep = 0;
+  Random rng = Random();
 
   List<int> _repititions = [20, 15, 12];
   List<Duration> _durations = List.generate(3, (index) => Duration());
-
   int _activeStep = 0;
-  int _timerIndex = -1;
 
   @override
   void initState() {
     super.initState();
+
     form = FormGroup({
       'exercise': FormControl<Exercises>(
         validators: [
@@ -328,20 +332,12 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
         ],
       ),
     });
-    _timers.add(_setTimer(anHour, 0));
-    _stopwatch.stop();
-    _stopwatch.reset();
-  }
 
-  CountdownTimer _setTimer(Duration duration, int labelIndex) {
-    return CountdownTimer(duration, aSecond, stopwatch: _stopwatch)
-      ..listen((event) {
-        setState(() {
-          _timeLabel[labelIndex] = _formatMinsec(
-            labelIndex == 0 ? event.elapsed : event.remaining,
-          );
-        });
-      });
+    _countdownTimer = CountdownTimer(
+      anHour,
+      aSecond,
+      stopwatch: _stopwatch,
+    );
   }
 
   String _formatMinsec(Duration d) {
@@ -351,9 +347,7 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
 
   @override
   void dispose() {
-    _timers.forEach((el) {
-      el.cancel();
-    });
+    _countdownTimer.cancel();
     super.dispose();
   }
 
@@ -412,51 +406,49 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
                     .toList(),
               ),
               Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    var width =
-                        min(constraints.maxHeight, constraints.maxWidth);
-                    return SizedBox(
-                      width: width - 40.0,
-                      child: ReactiveFormConsumer(
-                        builder: (context, form, child) {
-                          if (form.valid && _timers.length == 1) {
-                            _timers.add(
-                              _setTimer(
-                                form.control('rest').value,
-                                1,
-                              ),
-                            );
-                            _stopwatch.stop();
-                            _stopwatch.reset();
-                          }
-
-                          return ElevatedButton(
-                            onPressed: form.valid
-                                ? () {
-                                    _timerIndex = _timerIndex + 1;
-                                    _stopwatch
-                                      ..stop()
-                                      ..reset()
-                                      ..start();
-                                  }
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
+                child: ReactiveFormConsumer(
+                  builder: (BuildContext context, FormGroup formGroup,
+                      Widget? child) {
+                    return GestureDetector(
+                      onTap: formGroup.valid
+                          ? () =>
+                              _buildTimerState(formGroup.control('rest').value)
+                          : null,
+                      child: SleekCircularSlider(
+                        appearance: CircularSliderAppearance(
+                          infoProperties: InfoProperties(
+                            topLabelText: _topLabel,
+                            modifier: (value) => _timeLabel,
+                            mainLabelStyle: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  formGroup.valid ? Colors.black : Colors.grey,
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: form.valid
-                                  ? [
-                                      Icon(Icons.play_arrow),
-                                      Text(_timeLabel[_timerIndex % 2]),
-                                    ]
-                                  : [
-                                      Icon(Icons.play_arrow),
-                                    ],
-                            ),
-                          );
-                        },
+                            bottomLabelText: _bottomLabel,
+                          ),
+                          startAngle: -90.0,
+                          angleRange: 360.0,
+                          customColors: formGroup.valid
+                              ? null
+                              : CustomSliderColors(
+                                  progressBarColor: Colors.grey,
+                                ),
+                        ),
+                        min: 0.0,
+                        max: 1.0,
+                        initialValue: formGroup.valid
+                            ? _timerActionStep % 2 == 0
+                                ? min(
+                                    _remaining.toDouble() /
+                                        formGroup
+                                            .control('rest')
+                                            .value
+                                            .inSeconds
+                                            .toDouble(),
+                                    1.0)
+                                : rng.nextDouble()
+                            : 1.0,
                       ),
                     );
                   },
@@ -521,5 +513,61 @@ class _ChallengeFormPageState extends State<ChallengeFormPage> {
         ),
       ),
     );
+  }
+
+  void _buildTimerState(Duration rest) {
+    switch (_timerActionStep) {
+      case 0: // count up
+        _topLabel = 'Set ${_activeStep + 1}';
+        _bottomLabel = 'Stop';
+        _countdownTimer.cancel();
+        _stopwatch
+          ..stop()
+          ..reset();
+        _countdownTimer = CountdownTimer(
+          anHour,
+          aSecond,
+          stopwatch: _stopwatch,
+        )..listen((event) {
+            setState(() {
+              _timeLabel = event.elapsed
+                  .toString()
+                  .split('.')
+                  .first
+                  .split(':')
+                  .sublist(1)
+                  .join(':');
+              _remaining = event.remaining.inSeconds;
+            });
+          });
+        break;
+      case 1:
+        _topLabel = 'Set ${_activeStep + 1}';
+        _bottomLabel = 'Cool down';
+        _countdownTimer.cancel();
+        _stopwatch
+          ..stop()
+          ..reset();
+        _countdownTimer = CountdownTimer(
+          rest,
+          aSecond,
+          stopwatch: _stopwatch,
+        )..listen((event) {
+            setState(() {
+              _timeLabel = event.remaining
+                  .toString()
+                  .split('.')
+                  .first
+                  .split(':')
+                  .sublist(1)
+                  .join(':');
+              _remaining = event.remaining.inSeconds;
+            });
+          });
+        _activeStep = _activeStep + 1;
+        break;
+    }
+
+    _timerActionStep = (_timerActionStep + 1) % 2;
   }
 }
